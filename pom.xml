@@ -13,6 +13,8 @@
 		<module>model</module>
 		<module>services</module>
 		<module>gateway</module>
+		<module>id-generator</module>
+		<module>common</module>
 	</modules>
 	<groupId>com.example</groupId>
 	<artifactId>xhub</artifactId>
