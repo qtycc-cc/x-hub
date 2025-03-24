@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: gateway
+  cloud:
+    nacos:
+      server-addr: 127.0.0.1:8848
+    gateway:
+      globalcors: #全局跨域
+        cors-configurations:
+          "[/**]":
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            maxAge: 3600
+      routes:
+        - id: service-user
+          uri: lb://service-user
+          predicates:
+            - Path=/api/user/**
+          filters:
+            - RewritePath=/api/user/?(?<segment>.*), /$\{segment} #重写路径
+        - id: chat
+          uri: lb://service-chat
+          predicates:
+            - Path=/api/chat/**
+          filters:
+            - RewritePath=/api/chat/?(?<segment>.*), /$\{segment}
+server:
+  port: 80
