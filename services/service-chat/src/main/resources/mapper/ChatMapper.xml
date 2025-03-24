@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.chat.mapper.ChatMapper">
+    <resultMap id="chatMetaResultMap" type="com.example.chat.model.ChatMeta" autoMapping="true">
+    </resultMap>
+
+    <sql id="chatMetaColumns">
+        `id`, `user_id`, `model`, `topic`, `starred`
+    </sql>
+
+    <select id="selectChatMetasByUserId">
+        SELECT
+        <include refid="chatMetaColumns"/>
+        FROM `chat_meta`
+        WHERE `user_id` = #{userId}
+    </select>
+</mapper>
