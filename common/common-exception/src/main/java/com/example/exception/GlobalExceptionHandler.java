@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.example.model.exception.AccountHasBeenUsedException;
 import com.example.model.exception.BusinessException;
 import com.example.model.exception.InvalidCredentialsException;
+import com.example.model.exception.MyCannotAcquireLockException;
 import com.example.model.exception.MyIllegalArgumentException;
 import com.example.model.exception.PermissionDeniedException;
 import com.example.model.response.ExceptionResponse;
@@ -40,6 +41,15 @@ public class GlobalExceptionHandler {
         ExceptionResponse exceptionResponse = new ExceptionResponse();
         exceptionResponse.setReason(e.getMessage());
         return ResponseEntity.badRequest()
+                .body(R.fail(e.getMessage(), exceptionResponse));
+    }
+
+    @ExceptionHandler(MyCannotAcquireLockException.class)
+    public ResponseEntity<R<ExceptionResponse>> handleMyCannotAcquireLockException(MyCannotAcquireLockException e) {
+        log.error("MyCannotAcquireLockException: the message is {}, and the cause is {}", e.getMessage(), e.getCause());
+        ExceptionResponse exceptionResponse = new ExceptionResponse();
+        exceptionResponse.setReason(e.getMessage());
+        return ResponseEntity.internalServerError()
                 .body(R.fail(e.getMessage(), exceptionResponse));
     }
 

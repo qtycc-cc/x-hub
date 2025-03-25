@@ -32,10 +32,35 @@
         `id`, `user_id`, `model`, `topic`, `starred`
     </sql>
 
-    <select id="selectChatMetasByUserId">
+    <sql id="chatColumns">
+        `id`, `user_id`, `model`, `content`, `topic`, `starred`
+    </sql>
+
+    <select id="selectChatMetasByUserId" resultMap="chatMetaResultMap">
         SELECT
         <include refid="chatMetaColumns"/>
         FROM `chat`
         WHERE `user_id` = #{userId}
     </select>
+
+    <select id="selectChatsByUserId" resultMap="chatResultMap">
+        SELECT
+        <include refid="chatColumns"/>
+        FROM `chat`
+        WHERE `user_id` = #{userId}
+    </select>
+
+    <select id="selectById" resultMap="chatResultMap">
+        SELECT
+        <include refid="chatColumns"/>
+        FROM `chat`
+        WHERE `id` = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.example.model.entity.Chat">
+        INSERT INTO
+            `chat`(`id`, `user_id`, `model`, `content`, `topic`, `starred`)
+        VALUES
+            (#{id}, #{userId}, #{model}, #{content}, #{topic}, #{starred})
+    </insert>
 </mapper>

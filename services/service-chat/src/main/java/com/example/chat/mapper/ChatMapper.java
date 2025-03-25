@@ -4,9 +4,13 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.example.model.entity.Chat;
 import com.example.model.entity.ChatMeta;
 
 @Mapper
 public interface ChatMapper {
     List<ChatMeta> selectChatMetasByUserId(Long userId);
+    List<Chat> selectChatsByUserId(Long userId);
+    Chat selectById(Long id);
+    Integer insert(Chat chat);
 }
