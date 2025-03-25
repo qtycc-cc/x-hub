@@ -5,7 +5,7 @@
     </resultMap>
 
     <sql id="baseColumns">
-        `id`, `account`, `password`, `api_Key`
+        `id`, `account`, `password`, `api_key`
     </sql>
 
     <select id="selectById" resultMap="userMap">
@@ -13,6 +13,13 @@
         <include refid="baseColumns"/>
         FROM `user`
         WHERE `id` = #{id}
+    </select>
+
+    <select id="selectByAccount" resultMap="userMap">
+        SELECT
+        <include refid="baseColumns"/>
+        FROM `user`
+        WHERE `account` = #{account}
     </select>
 
     <select id="selectByAccountAndPassword" resultMap="userMap">
@@ -25,9 +32,8 @@
 
     <insert id="insert" parameterType="com.example.model.entity.User">
         INSERT INTO
-        `user`(`id`, `account`, `password`, `api_Key`)
+        `user`(`id`, `account`, `password`, `api_key`)
         VALUES
         (#{id}, #{account}, #{password}, #{apiKey})
     </insert>
-
 </mapper>

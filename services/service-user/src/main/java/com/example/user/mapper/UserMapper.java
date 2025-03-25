@@ -8,6 +8,7 @@ import com.example.model.request.UserCommonRequest;
 @Mapper
 public interface UserMapper {
     User selectById(Long id);
+    User selectByAccount(String account);
     User selectByAccountAndPassword(UserCommonRequest userCommonRequest);
     Integer insert(User user);
 }
