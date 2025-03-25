@@ -6,9 +6,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
-import org.redisson.Redisson;
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -53,7 +53,7 @@ public class ChatServiceImpl implements ChatService {
     @Autowired
     private ChatMapper chatMapper;
     @Autowired
-    private Redisson redisson;
+    private RedissonClient redissonClient;
 
     private static final String DEEPSEEK_MODEL = "deepseek-r1-250120";
     private static final String DOUBAO_MODEL = "doubao-1-5-pro-256k-250115";
@@ -82,7 +82,7 @@ public class ChatServiceImpl implements ChatService {
 
         String userChatStateKey = USER_CHAT_STATE_KEY + currentUser.getId();
         String lockKey = userChatStateKey + LOCK_KEY_SUFFIX;
-        RLock lock = redisson.getLock(lockKey);
+        RLock lock = redissonClient.getLock(lockKey);
 
         try {
             boolean locked = lock.tryLock(2, TimeUnit.SECONDS);
@@ -93,7 +93,7 @@ public class ChatServiceImpl implements ChatService {
             StringBuilder reasonContent = new StringBuilder("");
             StringBuilder assistantContent = new StringBuilder("");
 
-            RBucket<UserChatState> stateBucket = redisson.getBucket(userChatStateKey);
+            RBucket<UserChatState> stateBucket = redissonClient.getBucket(userChatStateKey);
             UserChatState userChatState = stateBucket.get();
 
             if (userChatState == null) {
