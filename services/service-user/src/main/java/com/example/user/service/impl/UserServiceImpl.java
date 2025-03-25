@@ -56,6 +56,7 @@ public class UserServiceImpl implements UserService {
         userCommonResponse.setChatMetas(chatMetas);
         StpUtil.login(user.getId());
         StpUtil.getSession().set("currentUser", user);
+        userCommonResponse.setToken(StpUtil.getTokenInfo());
         return R.ok("User login success", userCommonResponse);
     }
 
