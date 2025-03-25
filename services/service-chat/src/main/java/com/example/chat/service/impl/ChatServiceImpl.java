@@ -27,7 +27,9 @@ import com.example.model.response.R;
 import com.example.model.response.UserChatResponse;
 import com.example.model.type.ChatRespType;
 import com.example.model.type.ModelType;
+import com.example.utils.JsonUtil;
 import com.example.utils.MyIdGenerator;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.volcengine.ark.runtime.model.completion.chat.ChatCompletionRequest;
 import com.volcengine.ark.runtime.model.completion.chat.ChatCompletionResult;
 import com.volcengine.ark.runtime.model.completion.chat.ChatMessage;
@@ -36,9 +38,6 @@ import com.volcengine.ark.runtime.service.ArkService;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONConfig;
-import cn.hutool.json.JSONUtil;
 import io.reactivex.Flowable;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
@@ -130,8 +129,8 @@ public class ChatServiceImpl implements ChatService {
                 Chat requiredChat = chatMapper.selectById(userChatRequest.getId());
                 // 设置userChatState
                 userChatState.setCurrentId(userChatRequest.getId());
-                JSONArray jsonArray = JSONUtil.parseArray(requiredChat.getContent(), JSONConfig.create().setIgnoreNullValue(false));
-                userChatState.setChatMessages(JSONUtil.toList(jsonArray, ChatMessage.class));
+                userChatState.setChatMessages(JsonUtil.fromJson(requiredChat.getContent(), new TypeReference<List<ChatMessage>>() {
+                }));
                 userChatState.setTopic(requiredChat.getTopic());
                 userChatState.setModel(requiredChat.getModel());
                 userChatState.setStarred(requiredChat.isStarred());
@@ -188,26 +187,26 @@ public class ChatServiceImpl implements ChatService {
                 ModelType model = userChatRequest.getModel();
                 String topic = currentState.getTopic();
                 return Flux.concat(
-                    Flux.just(JSONUtil.toJsonStr(
+                    Flux.just(JsonUtil.toJson(
                         UserChatResponse.builder()
                                     .type(ChatRespType.METADATA)
                                     .id(id)
                                     .model(model)
                                     .topic(topic)
                                     .build()
-                    , JSONConfig.create().setIgnoreNullValue(false))),
+                    )),
                     Flux.from(flowableResponse)
-                            .map(content -> JSONUtil.toJsonStr(
+                            .map(content -> JsonUtil.toJson(
                                 UserChatResponse.builder()
                                     .type(ChatRespType.MESSAGE)
                                     .data(content)
                                     .build()
-                                    , JSONConfig.create().setIgnoreNullValue(false))),
-                    Flux.just(JSONUtil.toJsonStr(
+                                )),
+                    Flux.just(JsonUtil.toJson(
                         UserChatResponse.builder()
                                     .type(ChatRespType.END)
                                     .build()
-                                    , JSONConfig.create().setIgnoreNullValue(false)))
+                                ))
                 )
                 .doOnComplete(() -> {
                     currentState.getChatMessages().add(ChatMessage.builder()
@@ -287,7 +286,7 @@ public class ChatServiceImpl implements ChatService {
         chat.setModel(state.getModel());
         chat.setTopic(state.getTopic());
         chat.setStarred(state.isStarred());
-        chat.setContent(JSONUtil.toJsonStr(state.getChatMessages(), JSONConfig.create().setIgnoreNullValue(false)));
+        chat.setContent(JsonUtil.toJson(state.getChatMessages()));
         chatMapper.insert(chat);
     }
 }
