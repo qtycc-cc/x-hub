@@ -12,6 +12,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.chat.dto.UserChatState;
 import com.example.chat.config.IdConfig;
 import com.example.chat.mapper.ChatMapper;
 import com.example.chat.service.ChatService;
@@ -36,9 +37,9 @@ import com.volcengine.ark.runtime.service.ArkService;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONConfig;
 import cn.hutool.json.JSONUtil;
 import io.reactivex.Flowable;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.util.context.Context;
@@ -129,7 +130,7 @@ public class ChatServiceImpl implements ChatService {
                 Chat requiredChat = chatMapper.selectById(userChatRequest.getId());
                 // 设置userChatState
                 userChatState.setCurrentId(userChatRequest.getId());
-                JSONArray jsonArray = JSONUtil.parseArray(requiredChat.getContent());
+                JSONArray jsonArray = JSONUtil.parseArray(requiredChat.getContent(), JSONConfig.create().setIgnoreNullValue(false));
                 userChatState.setChatMessages(JSONUtil.toList(jsonArray, ChatMessage.class));
                 userChatState.setTopic(requiredChat.getTopic());
                 userChatState.setModel(requiredChat.getModel());
@@ -181,8 +182,6 @@ public class ChatServiceImpl implements ChatService {
                     })
                     .doOnError(Throwable::printStackTrace);
 
-            stateBucket.set(userChatState);
-
             return Flux.deferContextual(ctx -> {
                 UserChatState currentState = (UserChatState)ctx.get("userChatState");
                 Long id = currentState.getCurrentId();
@@ -196,19 +195,19 @@ public class ChatServiceImpl implements ChatService {
                                     .model(model)
                                     .topic(topic)
                                     .build()
-                    )),
+                    , JSONConfig.create().setIgnoreNullValue(false))),
                     Flux.from(flowableResponse)
                             .map(content -> JSONUtil.toJsonStr(
                                 UserChatResponse.builder()
                                     .type(ChatRespType.MESSAGE)
                                     .data(content)
                                     .build()
-                            )),
+                                    , JSONConfig.create().setIgnoreNullValue(false))),
                     Flux.just(JSONUtil.toJsonStr(
                         UserChatResponse.builder()
                                     .type(ChatRespType.END)
                                     .build()
-                    ))
+                                    , JSONConfig.create().setIgnoreNullValue(false)))
                 )
                 .doOnComplete(() -> {
                     currentState.getChatMessages().add(ChatMessage.builder()
@@ -219,6 +218,7 @@ public class ChatServiceImpl implements ChatService {
                                 .role(ChatMessageRole.ASSISTANT)
                                 .content(assistantContent.toString())
                                 .build());
+                    stateBucket.set(currentState);
                 });
             })
             .contextWrite(Context.of("userChatState", userChatState));
@@ -231,15 +231,6 @@ public class ChatServiceImpl implements ChatService {
                 lock.unlock();
             }
         }
-    }
-
-    @Data
-    private static class UserChatState {
-        private Long currentId;
-        private List<ChatMessage> chatMessages;
-        private String topic;
-        private ModelType model;
-        private boolean starred;
     }
 
     private String getModel(ModelType model) {
@@ -296,7 +287,7 @@ public class ChatServiceImpl implements ChatService {
         chat.setModel(state.getModel());
         chat.setTopic(state.getTopic());
         chat.setStarred(state.isStarred());
-        chat.setContent(JSONUtil.toJsonStr(state.getChatMessages()));
+        chat.setContent(JSONUtil.toJsonStr(state.getChatMessages(), JSONConfig.create().setIgnoreNullValue(false)));
         chatMapper.insert(chat);
     }
 }
