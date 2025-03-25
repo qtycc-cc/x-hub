@@ -1,5 +1,6 @@
 package com.example.model.entity;
 
+import com.example.model.type.ModelType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Data;
@@ -10,6 +11,6 @@ public class ChatMeta {
     private Long id;
     private Long userId;
     private String topic;
-    private String model;
+    private ModelType model;
     private boolean starred;
 }
