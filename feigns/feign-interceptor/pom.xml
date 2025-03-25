@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
           <groupId>com.example</groupId>
-          <artifactId>services</artifactId>
+          <artifactId>feigns</artifactId>
           <version>1.0-SNAPSHOT</version>
     </parent>
 
     <groupId>com.example</groupId>
-    <artifactId>service-chat</artifactId>
+    <artifactId>feign-interceptor</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -20,13 +20,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-		</dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-spring-boot3-starter</artifactId>
+            <version>1.41.0</version>
+        </dependency>
         <dependency>
-			<groupId>com.volcengine</groupId>
-			<artifactId>volcengine-java-sdk-ark-runtime</artifactId>
-			<version>LATEST</version>
+			<groupId>cn.dev33</groupId>
+			<artifactId>sa-token-redisson-spring-boot-starter</artifactId>
+			<version>1.41.0</version>
 		</dependency>
     </dependencies>
 

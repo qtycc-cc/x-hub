@@ -10,8 +10,9 @@
     </parent>
     <packaging>pom</packaging>
     <modules>
-        <module>common-id</module>
         <module>common-exception</module>
+        <module>common-token</module>
+        <module>common-utils</module>
     </modules>
 
     <groupId>com.example</groupId>

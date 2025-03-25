@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>feign-chat</module>
+        <module>feign-interceptor</module>
     </modules>
 
     <groupId>com.example</groupId>
