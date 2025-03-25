@@ -15,6 +15,7 @@
 		<module>gateway</module>
 		<module>id-generator</module>
 		<module>common</module>
+		<module>feigns</module>
 	</modules>
 	<groupId>com.example</groupId>
 	<artifactId>xhub</artifactId>

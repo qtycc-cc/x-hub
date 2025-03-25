@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.model.entity.User;
 import com.example.model.request.UserCommonRequest;
 import com.example.model.response.R;
+import com.example.model.response.UserCommonResponse;
 import com.example.user.service.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +17,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<R<User>> login(@RequestBody UserCommonRequest userCommonRequest) {
+    public ResponseEntity<R<UserCommonResponse>> login(@RequestBody UserCommonRequest userCommonRequest) {
         return ResponseEntity.ok(userService.login(userCommonRequest));
     }
 

@@ -3,6 +3,7 @@ package com.example.user.service;
 import com.example.model.entity.User;
 import com.example.model.request.UserCommonRequest;
 import com.example.model.response.R;
+import com.example.model.response.UserCommonResponse;
 
 /**
  * UserService
@@ -13,7 +14,7 @@ public interface UserService {
      * @param userCommonRequest see {@link UserCommonRequest}
      * @return logined User see {@link User}
      */
-    R<User> login(UserCommonRequest userCommonRequest);
+    R<UserCommonResponse> login(UserCommonRequest userCommonRequest);
     /**
      * register
      * @param userCommonRequest see {@link UserCommonRequest}
