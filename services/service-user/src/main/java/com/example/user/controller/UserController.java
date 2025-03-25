@@ -8,6 +8,9 @@ import com.example.model.request.UserCommonRequest;
 import com.example.model.response.R;
 import com.example.model.response.UserCommonResponse;
 import com.example.user.service.UserService;
+
+import cn.dev33.satoken.stp.StpUtil;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -15,6 +18,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class UserController {
     @Autowired
     private UserService userService;
+
+    @PostMapping("/logout")
+    public ResponseEntity<R<String>> logout() {
+        StpUtil.logout();
+        return ResponseEntity.ok(R.ok("User logout success"));
+    }
 
     @PostMapping("/login")
     public ResponseEntity<R<UserCommonResponse>> login(@RequestBody UserCommonRequest userCommonRequest) {

@@ -22,6 +22,8 @@ import com.example.user.mapper.UserMapper;
 import com.example.user.service.UserService;
 import com.example.utils.MyIdGenerator;
 
+import cn.dev33.satoken.stp.StpUtil;
+
 @Service
 public class UserServiceImpl implements UserService {
     @Autowired
@@ -52,6 +54,8 @@ public class UserServiceImpl implements UserService {
         }
         List<ChatMeta> chatMetas = chatMetasResponse.getData();
         userCommonResponse.setChatMetas(chatMetas);
+        StpUtil.login(user.getId());
+        StpUtil.getSession().set("currentUser", user);
         return R.ok("User login success", userCommonResponse);
     }
 
