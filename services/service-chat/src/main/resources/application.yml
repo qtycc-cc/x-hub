@@ -15,6 +15,11 @@ spring:
             host: 127.0.0.1
             port: 6379
             timeout: 10000
+    elasticsearch:
+        uris: "http://localhost:9200"
+        socket-timeout: "10s"
+        username: "elastic"
+        password: "123456"
 mybatis:
     type-handlers-package: com.example.chat.handler
     mapper-locations: classpath:mapper/*.xml

@@ -15,11 +15,14 @@ import com.example.model.response.R;
 import reactor.core.publisher.Flux;
 
 import com.example.chat.service.ChatService;
+import com.example.model.entity.Chat;
 import com.example.model.entity.ChatMeta;
 import com.example.model.request.UserChatRequest;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController
@@ -28,8 +31,18 @@ public class ChatController {
     private ChatService chatService;
 
     @GetMapping("/chatmeta/{userId}")
-    public ResponseEntity<R<List<ChatMeta>>> getChatMetas(@PathVariable Long userId) {
+    public ResponseEntity<R<List<ChatMeta>>> getChatMetasByUserId(@PathVariable Long userId) {
         return ResponseEntity.ok(chatService.getChatMetasByUserId(userId));
+    }
+
+    @GetMapping("/chat/{userId}")
+    public ResponseEntity<R<List<Chat>>> getChatsByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(chatService.getChatsByUserId(userId));
+    }
+
+    @GetMapping("/chatmeta/query")
+    public ResponseEntity<R<List<ChatMeta>>> getChatMetasByKeyword(@RequestParam String keyword) {
+        return ResponseEntity.ok(chatService.getChatMetasByKeyword(keyword));
     }
 
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

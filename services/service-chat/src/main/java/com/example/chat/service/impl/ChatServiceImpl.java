@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.chat.config.IdConfig;
+import com.example.chat.mapper.ChatElasticRepository;
 import com.example.chat.mapper.ChatMapper;
 import com.example.chat.pojo.UserChatState;
 import com.example.chat.service.ChatService;
@@ -29,7 +31,6 @@ import com.example.model.type.ChatRespType;
 import com.example.model.type.ModelType;
 import com.example.utils.JsonUtil;
 import com.example.utils.MyIdGenerator;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.volcengine.ark.runtime.model.completion.chat.ChatCompletionRequest;
 import com.volcengine.ark.runtime.model.completion.chat.ChatCompletionResult;
 import com.volcengine.ark.runtime.model.completion.chat.ChatMessage;
@@ -37,6 +38,7 @@ import com.volcengine.ark.runtime.model.completion.chat.ChatMessageRole;
 import com.volcengine.ark.runtime.service.ArkService;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import io.reactivex.Flowable;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +54,8 @@ public class ChatServiceImpl implements ChatService {
     private IdConfig idConfig;
     @Autowired
     private ChatMapper chatMapper;
+    @Autowired
+    private ChatElasticRepository chatElasticRepository;
     @Autowired
     private RedissonClient redissonClient;
 
@@ -71,9 +75,20 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public R<List<ChatMeta>> getChatMetasByKeyWord(String keyWord) {
-        // TODO
-        return null;
+    public R<List<ChatMeta>> getChatMetasByKeyword(String keyword) {
+        List<Chat> chats = chatElasticRepository.findByKeyword(keyword);
+        List<ChatMeta> chatMetas = chats.stream().map(chat -> { // prevent get content
+            ChatMeta chatMeta = new ChatMeta();
+            BeanUtil.copyProperties(chat, chatMeta);
+            return chatMeta;
+        }).collect(Collectors.toList());
+        return R.ok("Find success", chatMetas);
+    }
+
+    @Override
+    public R<List<Chat>> getChatsByUserId(Long userId) {
+        List<Chat> chats = chatMapper.selectChatsByUserId(userId);
+        return R.ok("Find success", chats);
     }
 
     @Override
@@ -114,7 +129,7 @@ public class ChatServiceImpl implements ChatService {
                     chat.setId(MyIdGenerator.generateId(idConfig.getWorkerId(), idConfig.getDatacenterId()));
                     chat.setModel(userChatRequest.getModel());
                     chat.setStarred(false);
-                    chat.setContent("[]");
+                    chat.setContent(new CopyOnWriteArrayList<>());
                     chat.setTopic(getTopic(userChatRequest.getMessage(), currentUser.getApiKey()));
                     // 修改userChatState
                     userChatState.setCurrentId(chat.getId());
@@ -132,8 +147,7 @@ public class ChatServiceImpl implements ChatService {
                     Chat requiredChat = chatMapper.selectById(userChatRequest.getId());
                     // 设置userChatState
                     userChatState.setCurrentId(userChatRequest.getId());
-                    userChatState.setChatMessages(JsonUtil.fromJson(requiredChat.getContent(), new TypeReference<List<ChatMessage>>() {
-                    }));
+                    userChatState.setChatMessages(requiredChat.getContent());
                     userChatState.setTopic(requiredChat.getTopic());
                     userChatState.setModel(requiredChat.getModel());
                     userChatState.setStarred(requiredChat.isStarred());
@@ -287,7 +301,7 @@ public class ChatServiceImpl implements ChatService {
         chat.setModel(state.getModel());
         chat.setTopic(state.getTopic());
         chat.setStarred(state.isStarred());
-        chat.setContent(JsonUtil.toJson(state.getChatMessages()));
+        chat.setContent(state.getChatMessages());
         chatMapper.insert(chat);
     }
 }
