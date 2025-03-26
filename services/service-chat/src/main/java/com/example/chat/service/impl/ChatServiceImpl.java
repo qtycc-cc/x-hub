@@ -84,153 +84,146 @@ public class ChatServiceImpl implements ChatService {
         String lockKey = userChatStateKey + LOCK_KEY_SUFFIX;
         RLock lock = redissonClient.getLock(lockKey);
 
-        try {
-            boolean locked = lock.tryLock(2, TimeUnit.SECONDS);
-            if (!locked) {
-                throw new MyCannotAcquireLockException("Acquire lock failed!!!");
-            }
+        if (lock.tryLock()) {
+            try {
 
-            StringBuilder reasonContent = new StringBuilder("");
-            StringBuilder assistantContent = new StringBuilder("");
+                StringBuilder reasonContent = new StringBuilder("");
+                StringBuilder assistantContent = new StringBuilder("");
 
-            RBucket<UserChatState> stateBucket = redissonClient.getBucket(userChatStateKey);
-            UserChatState userChatState = stateBucket.get();
+                RBucket<UserChatState> stateBucket = redissonClient.getBucket(userChatStateKey);
+                UserChatState userChatState = stateBucket.get();
 
-            if (userChatState == null) {
-                userChatState = new UserChatState();
-            }
-
-            if (userChatRequest.getId() == null) {
-                // 新聊天
-                // 存入数据库
-                if (userChatState.getCurrentId() != null) {
-                    savePengdingMessages(userChatState, currentUser.getId());
+                if (userChatState == null) {
+                    userChatState = new UserChatState();
                 }
-                // 创建会话
-                Chat chat = new Chat();
-                chat.setId(MyIdGenerator.generateId(idConfig.getWorkerId(), idConfig.getDatacenterId()));
-                chat.setModel(userChatRequest.getModel());
-                chat.setStarred(false);
-                chat.setContent("[]");
-                chat.setTopic(getTopic(userChatRequest.getMessage(), currentUser.getApiKey()));
-                // 修改userChatState
-                userChatState.setCurrentId(chat.getId());
-                userChatState.setChatMessages(new CopyOnWriteArrayList<>());
-                userChatState.setTopic(chat.getTopic());
-                userChatState.setModel(userChatRequest.getModel());
-                userChatState.setStarred(false);
-            } else if (!userChatState.getCurrentId().equals(userChatRequest.getId())) {
-                // 继续聊天
-                // 存入数据库
-                if (userChatState.getCurrentId() != null) {
-                    savePengdingMessages(userChatState, currentUser.getId());
+
+                if (userChatRequest.getId() == null) {
+                    // 新聊天
+                    // 存入数据库
+                    if (userChatState.getCurrentId() != null) {
+                        savePengdingMessages(userChatState, currentUser.getId());
+                    }
+                    // 创建会话
+                    Chat chat = new Chat();
+                    chat.setId(MyIdGenerator.generateId(idConfig.getWorkerId(), idConfig.getDatacenterId()));
+                    chat.setModel(userChatRequest.getModel());
+                    chat.setStarred(false);
+                    chat.setContent("[]");
+                    chat.setTopic(getTopic(userChatRequest.getMessage(), currentUser.getApiKey()));
+                    // 修改userChatState
+                    userChatState.setCurrentId(chat.getId());
+                    userChatState.setChatMessages(new CopyOnWriteArrayList<>());
+                    userChatState.setTopic(chat.getTopic());
+                    userChatState.setModel(userChatRequest.getModel());
+                    userChatState.setStarred(false);
+                } else if (!userChatState.getCurrentId().equals(userChatRequest.getId())) {
+                    // 继续聊天
+                    // 存入数据库
+                    if (userChatState.getCurrentId() != null) {
+                        savePengdingMessages(userChatState, currentUser.getId());
+                    }
+                    // 读取数据库
+                    Chat requiredChat = chatMapper.selectById(userChatRequest.getId());
+                    // 设置userChatState
+                    userChatState.setCurrentId(userChatRequest.getId());
+                    userChatState.setChatMessages(JsonUtil.fromJson(requiredChat.getContent(), new TypeReference<List<ChatMessage>>() {
+                    }));
+                    userChatState.setTopic(requiredChat.getTopic());
+                    userChatState.setModel(requiredChat.getModel());
+                    userChatState.setStarred(requiredChat.isStarred());
                 }
-                // 读取数据库
-                Chat requiredChat = chatMapper.selectById(userChatRequest.getId());
-                // 设置userChatState
-                userChatState.setCurrentId(userChatRequest.getId());
-                userChatState.setChatMessages(JsonUtil.fromJson(requiredChat.getContent(), new TypeReference<List<ChatMessage>>() {
-                }));
-                userChatState.setTopic(requiredChat.getTopic());
-                userChatState.setModel(requiredChat.getModel());
-                userChatState.setStarred(requiredChat.isStarred());
-            }
 
-            // 构建arkService
-            arkService = ArkService.builder().apiKey(currentUser.getApiKey())
-                    .timeout(Duration.ofMinutes(30))
-                    .build();
-
-            // 提示词
-            if (userChatRequest.getPrompt() != null && !StrUtil.isBlank(userChatRequest.getPrompt())) {
-                ChatMessage sysMessage = ChatMessage.builder()
-                        .role(ChatMessageRole.SYSTEM)
-                        .content(userChatRequest.getPrompt())
+                // 构建arkService
+                arkService = ArkService.builder().apiKey(currentUser.getApiKey())
+                        .timeout(Duration.ofMinutes(30))
                         .build();
-                userChatState.getChatMessages().add(sysMessage);
-            }
-            // 创建用户消息
-            ChatMessage userMessage = ChatMessage.builder()
-                    .role(ChatMessageRole.USER) // 设置消息角色为用户
-                    .content(userChatRequest.getMessage()) // 设置消息内容
-                    .build();
-            // 将用户消息添加到消息列表
-            userChatState.getChatMessages().add(userMessage);
-            // 创建聊天完成请求
-            ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest.builder()
-                    .model(getModel(userChatRequest.getModel()))
-                    .messages(userChatState.getChatMessages()) // 设置消息列表
-                    .build();
-            // 建立流
-            Flowable<String> flowableResponse = Flowable
-                    .fromPublisher(arkService.streamChatCompletion(chatCompletionRequest))
-                    .map(choice -> {
-                        if (choice.getChoices().size() > 0) {
-                            ChatMessage message = choice.getChoices().get(0).getMessage();
-                            String responseContent = (String) message.getContent();
-                            // 处理模型输出的内容
-                            if (message.getReasoningContent() != null && !message.getReasoningContent().isEmpty()) {
-                                responseContent = REASON_PREFIX + message.getReasoningContent(); // 使用推理内容
-                                reasonContent.append(message.getReasoningContent());
-                            } else {
-                                assistantContent.append(message.getContent());
+
+                // 提示词
+                if (userChatRequest.getPrompt() != null && !StrUtil.isBlank(userChatRequest.getPrompt())) {
+                    ChatMessage sysMessage = ChatMessage.builder()
+                            .role(ChatMessageRole.SYSTEM)
+                            .content(userChatRequest.getPrompt())
+                            .build();
+                    userChatState.getChatMessages().add(sysMessage);
+                }
+                // 创建用户消息
+                ChatMessage userMessage = ChatMessage.builder()
+                        .role(ChatMessageRole.USER) // 设置消息角色为用户
+                        .content(userChatRequest.getMessage()) // 设置消息内容
+                        .build();
+                // 将用户消息添加到消息列表
+                userChatState.getChatMessages().add(userMessage);
+                // 创建聊天完成请求
+                ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest.builder()
+                        .model(getModel(userChatRequest.getModel()))
+                        .messages(userChatState.getChatMessages()) // 设置消息列表
+                        .build();
+                // 建立流
+                Flowable<String> flowableResponse = Flowable
+                        .fromPublisher(arkService.streamChatCompletion(chatCompletionRequest))
+                        .map(choice -> {
+                            if (choice.getChoices().size() > 0) {
+                                ChatMessage message = choice.getChoices().get(0).getMessage();
+                                String responseContent = (String) message.getContent();
+                                // 处理模型输出的内容
+                                if (message.getReasoningContent() != null && !message.getReasoningContent().isEmpty()) {
+                                    responseContent = REASON_PREFIX + message.getReasoningContent(); // 使用推理内容
+                                    reasonContent.append(message.getReasoningContent());
+                                } else {
+                                    assistantContent.append(message.getContent());
+                                }
+                                return responseContent;
                             }
-                            return responseContent;
-                        }
-                        return "";
-                    })
-                    .doOnError(Throwable::printStackTrace);
-
-            return Flux.deferContextual(ctx -> {
-                UserChatState currentState = (UserChatState)ctx.get("userChatState");
-                Long id = currentState.getCurrentId();
-                ModelType model = userChatRequest.getModel();
-                String topic = currentState.getTopic();
-                return Flux.concat(
-                    Flux.just(JsonUtil.toJson(
-                        UserChatResponse.builder()
-                                    .type(ChatRespType.METADATA)
-                                    .id(id)
-                                    .model(model)
-                                    .topic(topic)
-                                    .build()
-                    )),
-                    Flux.from(flowableResponse)
-                            .map(content -> JsonUtil.toJson(
-                                UserChatResponse.builder()
-                                    .type(ChatRespType.MESSAGE)
-                                    .data(content)
-                                    .build()
-                                )),
-                    Flux.just(JsonUtil.toJson(
-                        UserChatResponse.builder()
-                                    .type(ChatRespType.END)
-                                    .build()
-                                ))
-                )
-                .doOnComplete(() -> {
-                    currentState.getChatMessages().add(ChatMessage.builder()
-                                .role(ChatMessageRole.ASSISTANT)
-                                .reasoningContent(reasonContent.toString())
-                                .build());
-                    currentState.getChatMessages().add(ChatMessage.builder()
-                                .role(ChatMessageRole.ASSISTANT)
-                                .content(assistantContent.toString())
-                                .build());
-                    log.info("current user is: {}", currentUser);
-                    log.info("Checked userChatstate topic is: {}", currentState.getTopic());
-                    stateBucket.set(currentState);
-                });
-            })
-            .contextWrite(Context.of("userChatState", userChatState));
-
-        } catch (InterruptedException e) {
-            log.error("InterruptedException :{}", e);
-            throw new BusinessException(e);
-        } finally {
-            if (lock.isHeldByCurrentThread()) {
-                lock.unlock();
+                            return "";
+                        })
+                        .doOnError(Throwable::printStackTrace);
+                return Flux.deferContextual(ctx -> {
+                    UserChatState currentState = (UserChatState)ctx.get("userChatState");
+                    Long id = currentState.getCurrentId();
+                    ModelType model = userChatRequest.getModel();
+                    String topic = currentState.getTopic();
+                    return Flux.concat(
+                        Flux.just(JsonUtil.toJson(
+                            UserChatResponse.builder()
+                                        .type(ChatRespType.METADATA)
+                                        .id(id)
+                                        .model(model)
+                                        .topic(topic)
+                                        .build()
+                        )),
+                        Flux.from(flowableResponse)
+                                .map(content -> JsonUtil.toJson(
+                                    UserChatResponse.builder()
+                                        .type(ChatRespType.MESSAGE)
+                                        .data(content)
+                                        .build()
+                                    )),
+                        Flux.just(JsonUtil.toJson(
+                            UserChatResponse.builder()
+                                        .type(ChatRespType.END)
+                                        .build()
+                                    ))
+                    )
+                    .doOnComplete(() -> {
+                        currentState.getChatMessages().add(ChatMessage.builder()
+                                    .role(ChatMessageRole.ASSISTANT)
+                                    .reasoningContent(reasonContent.toString())
+                                    .build());
+                        currentState.getChatMessages().add(ChatMessage.builder()
+                                    .role(ChatMessageRole.ASSISTANT)
+                                    .content(assistantContent.toString())
+                                    .build());
+                        stateBucket.set(currentState);
+                    });
+                })
+                .contextWrite(Context.of("userChatState", userChatState));
+            } finally {
+                if (lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
             }
+        } else {
+            throw new MyCannotAcquireLockException("Acquire lock failed!!!");
         }
     }
 
