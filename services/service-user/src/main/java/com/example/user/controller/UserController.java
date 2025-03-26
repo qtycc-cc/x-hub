@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.model.request.UserCommonRequest;
 import com.example.model.response.R;
+import com.example.model.response.SimpleResponse;
 import com.example.model.response.UserCommonResponse;
 import com.example.user.service.UserService;
 
@@ -31,7 +32,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<R<Integer>> register(@RequestBody UserCommonRequest userCommonRequest) {
+    public ResponseEntity<R<SimpleResponse>> register(@RequestBody UserCommonRequest userCommonRequest) {
         return ResponseEntity.ok(userService.register(userCommonRequest));
     }
 }

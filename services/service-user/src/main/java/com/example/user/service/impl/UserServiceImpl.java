@@ -16,6 +16,7 @@ import com.example.model.exception.InvalidCredentialsException;
 import com.example.model.exception.MyIllegalArgumentException;
 import com.example.model.request.UserCommonRequest;
 import com.example.model.response.R;
+import com.example.model.response.SimpleResponse;
 import com.example.model.response.UserCommonResponse;
 import com.example.user.config.IdConfig;
 import com.example.user.mapper.UserMapper;
@@ -61,7 +62,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public R<Integer> register(UserCommonRequest userCommonRequest) {
+    public R<SimpleResponse> register(UserCommonRequest userCommonRequest) {
         if (userCommonRequest == null ||
             userCommonRequest.getAccount() == null ||
             userCommonRequest.getPassword() == null) {
@@ -80,6 +81,8 @@ public class UserServiceImpl implements UserService {
         if (affectedRows == 0) {
             throw new BusinessException("User register failed!!!");
         }
-        return R.ok("User register success", affectedRows);
+        SimpleResponse response = new SimpleResponse();
+        response.setMessage(String.format("%d row affected!!!", affectedRows));
+        return R.ok("User register success", response);
     }
 }

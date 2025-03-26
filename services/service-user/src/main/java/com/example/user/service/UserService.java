@@ -3,6 +3,7 @@ package com.example.user.service;
 import com.example.model.entity.User;
 import com.example.model.request.UserCommonRequest;
 import com.example.model.response.R;
+import com.example.model.response.SimpleResponse;
 import com.example.model.response.UserCommonResponse;
 
 /**
@@ -18,7 +19,7 @@ public interface UserService {
     /**
      * register
      * @param userCommonRequest see {@link UserCommonRequest}
-     * @return Integer affected rows
+     * @return SimpleResponse see {@link SimpleResponse}
      */
-    R<Integer> register(UserCommonRequest userCommonRequest);
+    R<SimpleResponse> register(UserCommonRequest userCommonRequest);
 }
