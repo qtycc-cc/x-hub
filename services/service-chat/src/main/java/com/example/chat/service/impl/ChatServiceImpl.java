@@ -217,6 +217,8 @@ public class ChatServiceImpl implements ChatService {
                                 .role(ChatMessageRole.ASSISTANT)
                                 .content(assistantContent.toString())
                                 .build());
+                    log.info("current user is: {}", currentUser);
+                    log.info("Checked userChatstate topic is: {}", currentState.getTopic());
                     stateBucket.set(currentState);
                 });
             })

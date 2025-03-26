@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
+import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 
@@ -35,6 +36,10 @@ public class SaTokenConfigure {
                         "swagger-ui.html")
                 // 鉴权方法：每次访问进入
                 .setAuth(obj -> {
+                    SaRouter.match("/**", "/api/user/login", r -> StpUtil.checkLogin());
+                    SaRouter.match("/**", "/api/user/register", r -> StpUtil.checkLogin());
+                    SaRouter.match("/**", "/api/user/logout/", r -> StpUtil.checkLogin());
+
                     SaManager.getLog().debug("----- 请求path={}  提交token={}", SaHolder.getRequest().getRequestPath(),
                             StpUtil.getTokenValue());
                 })
