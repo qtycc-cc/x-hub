@@ -12,9 +12,9 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.chat.dto.UserChatState;
 import com.example.chat.config.IdConfig;
 import com.example.chat.mapper.ChatMapper;
+import com.example.chat.pojo.UserChatState;
 import com.example.chat.service.ChatService;
 import com.example.model.entity.Chat;
 import com.example.model.entity.ChatMeta;
@@ -68,6 +68,12 @@ public class ChatServiceImpl implements ChatService {
     public R<List<ChatMeta>> getChatMetasByUserId(Long userId) {
         List<ChatMeta> chatMetas = chatMapper.selectChatMetasByUserId(userId);
         return R.ok("Find success", chatMetas);
+    }
+
+    @Override
+    public R<List<ChatMeta>> getChatMetasByKeyWord(String keyWord) {
+        // TODO
+        return null;
     }
 
     @Override

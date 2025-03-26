@@ -1,4 +1,4 @@
-package com.example.chat.dto;
+package com.example.chat.pojo;
 
 import java.util.List;
 

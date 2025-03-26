@@ -25,4 +25,10 @@ public interface ChatService {
      * @return chat flux
      */
     Flux<String> chat(UserChatRequest userChatRequest);
+    /**
+     * Get chat metas by key word
+     * @param keyWord used to get chat metas
+     * @return chat metas see {@link ChatMeta}
+     */
+    R<List<ChatMeta>> getChatMetasByKeyWord(String keyWord);
 }
