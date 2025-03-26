@@ -1,5 +1,6 @@
 package com.example.exception;
 
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -49,7 +50,7 @@ public class GlobalExceptionHandler {
         log.error("MyCannotAcquireLockException: the message is {}, and the cause is {}", e.getMessage(), e.getCause());
         ExceptionResponse exceptionResponse = new ExceptionResponse();
         exceptionResponse.setReason(e.getMessage());
-        return ResponseEntity.internalServerError()
+        return ResponseEntity.status(HttpStatusCode.valueOf(403))
                 .body(R.fail(e.getMessage(), exceptionResponse));
     }
 
@@ -58,7 +59,7 @@ public class GlobalExceptionHandler {
         log.error("PermissionDeniedException: the message is {}, and the cause is {}", e.getMessage(), e.getCause());
         ExceptionResponse exceptionResponse = new ExceptionResponse();
         exceptionResponse.setReason(e.getMessage());
-        return ResponseEntity.status(403)
+        return ResponseEntity.status(HttpStatusCode.valueOf(403))
                 .body(R.fail(e.getMessage(), exceptionResponse));
     }
 
