@@ -15,6 +15,8 @@ import com.example.model.exception.PermissionDeniedException;
 import com.example.model.response.ExceptionResponse;
 import com.example.model.response.R;
 
+import cn.dev33.satoken.exception.NotLoginException;
+
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -60,6 +62,15 @@ public class GlobalExceptionHandler {
         ExceptionResponse exceptionResponse = new ExceptionResponse();
         exceptionResponse.setReason(e.getMessage());
         return ResponseEntity.status(HttpStatusCode.valueOf(403))
+                .body(R.fail(e.getMessage(), exceptionResponse));
+    }
+
+    @ExceptionHandler(NotLoginException.class)
+    public ResponseEntity<R<ExceptionResponse>> handleNotLoginException(NotLoginException e) {
+        log.error("PermissionDeniedException: the message is {}, and the cause is {}", e.getMessage(), e.getCause());
+        ExceptionResponse exceptionResponse = new ExceptionResponse();
+        exceptionResponse.setReason(e.getMessage());
+        return ResponseEntity.status(HttpStatusCode.valueOf(401))
                 .body(R.fail(e.getMessage(), exceptionResponse));
     }
 
