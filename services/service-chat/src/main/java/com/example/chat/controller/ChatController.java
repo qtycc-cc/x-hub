@@ -35,12 +35,12 @@ public class ChatController {
         return ResponseEntity.ok(chatService.getChatMetasByUserId(userId));
     }
 
-    @GetMapping("/chat/{userId}")
-    public ResponseEntity<R<List<Chat>>> getChatsByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(chatService.getChatsByUserId(userId));
-    }
+    // @GetMapping("/chat/{userId}")
+    // public ResponseEntity<R<List<Chat>>> getChatsByUserId(@PathVariable Long userId) {
+    //     return ResponseEntity.ok(chatService.getChatsByUserId(userId));
+    // }
 
-    @GetMapping("/chatinfo/{id}")
+    @GetMapping("/chat/{id}")
     public ResponseEntity<R<Chat>> getChatById(@PathVariable Long id) {
         return ResponseEntity.ok(chatService.getChatById(id));
     }
