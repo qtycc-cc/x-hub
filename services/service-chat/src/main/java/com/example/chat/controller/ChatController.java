@@ -66,4 +66,9 @@ public class ChatController {
     public ResponseEntity<R<SimpleResponse>> unstar(@PathVariable Long id) {
         return ResponseEntity.ok(chatService.unstar(id));
     }
+
+    @DeleteMapping("/chat/{id}")
+    public ResponseEntity<R<SimpleResponse>> deleteChat(@PathVariable Long id) {
+        return ResponseEntity.ok(chatService.deleteChat(id));
+    }
 }

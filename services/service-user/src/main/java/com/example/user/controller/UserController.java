@@ -21,9 +21,11 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/logout")
-    public ResponseEntity<R<String>> logout() {
+    public ResponseEntity<R<SimpleResponse>> logout() {
         StpUtil.logout();
-        return ResponseEntity.ok(R.ok("User logout success"));
+        SimpleResponse response = new SimpleResponse();
+        response.setMessage("Logout success!!!");
+        return ResponseEntity.ok(R.ok("User logout success", response));
     }
 
     @PostMapping("/login")

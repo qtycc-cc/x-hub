@@ -15,4 +15,5 @@ public interface ChatMapper {
     Integer insert(Chat chat);
     Integer starChat(Long id);
     Integer unstarChat(Long id);
+    Integer deleteChat(Long id);
 }

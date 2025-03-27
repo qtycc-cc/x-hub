@@ -80,4 +80,11 @@
         WHERE
             `id` = #{id}
     </update>
+
+    <delete id="deleteChat">
+        DELETE FROM
+            `chat`
+        WHERE
+            `id` = #{id}
+    </delete>
 </mapper>

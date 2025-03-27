@@ -121,6 +121,17 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public R<SimpleResponse> deleteChat(Long id) {
+        Integer affectedRows = chatMapper.deleteChat(id);
+        if (affectedRows == 0) {
+            throw new BusinessException("Delete failed!!!");
+        }
+        SimpleResponse response = new SimpleResponse();
+        response.setMessage(String.format("%d rows affected!!!", affectedRows));
+        return R.ok("Delete success!!!", response);
+    }
+
+    @Override
     public Flux<String> chat(UserChatRequest userChatRequest) {
         if (userChatRequest == null
                 || StrUtil.isBlank(userChatRequest.getMessage())

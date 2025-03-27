@@ -57,4 +57,10 @@ public interface ChatService {
      * @return SimpleResponse see {@link SimpleResponse}
      */
     R<SimpleResponse> unstar(Long id);
+    /**
+     * Delete chat
+     * @param id chat id
+     * @return SimpleResponse see {@link SimpleResponse}
+     */
+    R<SimpleResponse> deleteChat(Long id);
 }
