@@ -13,7 +13,6 @@
 		<module>model</module>
 		<module>services</module>
 		<module>gateway</module>
-		<module>id-generator</module>
 		<module>common</module>
 		<module>feigns</module>
 	</modules>
@@ -77,14 +76,5 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
 
 </project>
