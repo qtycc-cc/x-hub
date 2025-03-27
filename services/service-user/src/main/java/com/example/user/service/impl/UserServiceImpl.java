@@ -67,6 +67,7 @@ public class UserServiceImpl implements UserService {
         }
         if (password != null) {
             user.setPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
+            StpUtil.logout();
         }
         Integer affectedRows = userMapper.update(user);
         if (affectedRows == 0) {
