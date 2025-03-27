@@ -14,6 +14,7 @@ import cn.dev33.satoken.stp.StpUtil;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 public class UserController {
@@ -36,5 +37,10 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<R<SimpleResponse>> register(@RequestBody UserCommonRequest userCommonRequest) {
         return ResponseEntity.ok(userService.register(userCommonRequest));
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<R<UserCommonResponse>> getUserInfo() {
+        return ResponseEntity.ok(userService.getUserInfo());
     }
 }

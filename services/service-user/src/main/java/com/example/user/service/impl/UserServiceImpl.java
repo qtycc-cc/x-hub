@@ -35,6 +35,20 @@ public class UserServiceImpl implements UserService {
     private ChatFeign chatFeign;
 
     @Override
+    public R<UserCommonResponse> getUserInfo() {
+        User currentUser = (User) StpUtil.getSession().get("currentUser");
+        UserCommonResponse userCommonResponse = new UserCommonResponse();
+        BeanUtils.copyProperties(currentUser, userCommonResponse);
+        R<List<ChatMeta>> chatMetasResponse = chatFeign.getChatMetas(currentUser.getId()).getBody();
+        if (chatMetasResponse == null || chatMetasResponse.getData() == null) {
+            throw new BusinessException("Get chat metas failed!!!");
+        }
+        List<ChatMeta> chatMetas = chatMetasResponse.getData();
+        userCommonResponse.setChatMetas(chatMetas);
+        return R.ok("Get success!!!", userCommonResponse);
+    }
+
+    @Override
     public R<UserCommonResponse> login(UserCommonRequest userCommonRequest) {
         if (userCommonRequest == null ||
             userCommonRequest.getAccount() == null ||

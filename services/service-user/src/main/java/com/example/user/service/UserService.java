@@ -1,6 +1,5 @@
 package com.example.user.service;
 
-import com.example.model.entity.User;
 import com.example.model.request.UserCommonRequest;
 import com.example.model.response.R;
 import com.example.model.response.SimpleResponse;
@@ -13,7 +12,7 @@ public interface UserService {
     /**
      * login
      * @param userCommonRequest see {@link UserCommonRequest}
-     * @return logined User see {@link User}
+     * @return logined user info see {@link UserCommonResponse}
      */
     R<UserCommonResponse> login(UserCommonRequest userCommonRequest);
     /**
@@ -22,4 +21,9 @@ public interface UserService {
      * @return SimpleResponse see {@link SimpleResponse}
      */
     R<SimpleResponse> register(UserCommonRequest userCommonRequest);
+    /**
+     * Get user info
+     * @return user info {@link UserCommonResponse}
+     */
+    R<UserCommonResponse> getUserInfo();
 }
