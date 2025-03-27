@@ -1,6 +1,7 @@
 package com.example.chat.service;
 
 import com.example.model.response.R;
+import com.example.model.response.SimpleResponse;
 
 import reactor.core.publisher.Flux;
 
@@ -44,4 +45,16 @@ public interface ChatService {
      * @return chat see {@link Chat}
      */
     R<Chat> getChatById(Long id);
+    /**
+     * Star chat
+     * @param id chat id
+     * @return SimpleResponse see {@link SimpleResponse}
+     */
+    R<SimpleResponse> star(Long id);
+    /**
+     * Unstar chat
+     * @param id chat id
+     * @return SimpleResponse see {@link SimpleResponse}
+     */
+    R<SimpleResponse> unstar(Long id);
 }

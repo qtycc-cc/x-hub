@@ -13,4 +13,6 @@ public interface ChatMapper {
     List<Chat> selectChatsByUserId(Long userId);
     Chat selectById(Long id);
     Integer insert(Chat chat);
+    Integer starChat(Long id);
+    Integer unstarChat(Long id);
 }

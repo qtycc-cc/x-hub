@@ -26,6 +26,7 @@ import com.example.model.exception.MyCannotAcquireLockException;
 import com.example.model.exception.MyIllegalArgumentException;
 import com.example.model.request.UserChatRequest;
 import com.example.model.response.R;
+import com.example.model.response.SimpleResponse;
 import com.example.model.response.UserChatResponse;
 import com.example.model.type.ChatRespType;
 import com.example.model.type.ModelType;
@@ -95,6 +96,28 @@ public class ChatServiceImpl implements ChatService {
     public R<Chat> getChatById(Long id) {
         Chat chat = chatMapper.selectById(id);
         return R.ok("Find success", chat);
+    }
+
+    @Override
+    public R<SimpleResponse> star(Long id) {
+        Integer affectedRows = chatMapper.starChat(id);
+        if (affectedRows == 0) {
+            throw new BusinessException("Star failed!!!");
+        }
+        SimpleResponse response = new SimpleResponse();
+        response.setMessage(String.format("%d rows affected!!!", affectedRows));
+        return R.ok("Star success!!!", response);
+    }
+
+    @Override
+    public R<SimpleResponse> unstar(Long id) {
+        Integer affectedRows = chatMapper.unstarChat(id);
+        if (affectedRows == 0) {
+            throw new BusinessException("Unstar failed!!!");
+        }
+        SimpleResponse response = new SimpleResponse();
+        response.setMessage(String.format("%d rows affected!!!", affectedRows));
+        return R.ok("Unstar success!!!", response);
     }
 
     @Override

@@ -63,4 +63,21 @@
         VALUES
             (#{id}, #{userId}, #{model}, #{content}, #{topic}, #{starred})
     </insert>
+
+    <update id="starChat">
+        UPDATE
+            `chat`
+        SET
+            `starred` = 1
+        WHERE
+            `id` = #{id}
+    </update>
+    <update id="unstarChat">
+        UPDATE
+            `chat`
+        SET
+            `starred` = 0
+        WHERE
+            `id` = #{id}
+    </update>
 </mapper>

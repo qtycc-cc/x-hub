@@ -7,10 +7,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import com.example.model.response.R;
+import com.example.model.response.SimpleResponse;
 
 import reactor.core.publisher.Flux;
 
@@ -53,5 +55,15 @@ public class ChatController {
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> chat(@RequestBody UserChatRequest userChatRequest) {
         return chatService.chat(userChatRequest);
+    }
+
+    @PostMapping("/star/{id}")
+    public ResponseEntity<R<SimpleResponse>> star(@PathVariable Long id) {
+        return ResponseEntity.ok(chatService.star(id));
+    }
+
+    @DeleteMapping("/star/{id}")
+    public ResponseEntity<R<SimpleResponse>> unstar(@PathVariable Long id) {
+        return ResponseEntity.ok(chatService.unstar(id));
     }
 }
