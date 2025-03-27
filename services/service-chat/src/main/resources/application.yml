@@ -2,21 +2,21 @@ spring:
     application:
         name: service-chat
     datasource:
-        url: jdbc:mysql://localhost:3307/xhub_chat?serverTimezone=GMT%2B8
+        url: jdbc:mysql://mysql:3306/xhub_chat?serverTimezone=GMT%2B8
         username: root
         password: 123456
     cloud:
         nacos:
             discovery:
-                server-addr: 127.0.0.1:8848
+                server-addr: nacos-standalone:8848 #127.0.0.1:8848
     data:
         redis:
             database: 0
-            host: 127.0.0.1
+            host: redis #127.0.0.1
             port: 6379
             timeout: 10000
     elasticsearch:
-        uris: "http://localhost:9200"
+        uris: "http://elasticsearch:9200" #"http://localhost:9200"
         socket-timeout: "10s"
         username: "elastic"
         password: "123456"

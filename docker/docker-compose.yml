@@ -1,0 +1,161 @@
+version: "3.8"
+
+networks:
+  xhub:
+
+services:
+  gateway:
+    container_name: gateway
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - xhub
+
+  service_user:
+    build:
+      context: ../services/service-user
+      dockerfile: Dockerfile
+    container_name: service-user
+    ports:
+      - "8000:8000"
+    networks:
+      - xhub
+    depends_on:
+      - mysql
+      - redis
+      - nacos
+
+  service_chat:
+    build:
+      context: ../services/service-chat
+      dockerfile: Dockerfile
+    container_name: service-chat
+    ports:
+      - "9000:9000"
+    networks:
+      - xhub
+    depends_on:
+      - mysql
+      - redis
+      - nacos
+
+  mysql:
+    image: mysql:lts
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: xhub
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql:/docker-entrypoint-initdb.d
+    networks:
+      - xhub
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - xhub
+
+  nacos:
+    image: nacos/nacos-server:${NACOS_VERSION}
+    container_name: nacos-standalone
+    environment:
+      - MODE=standalone
+      - NACOS_AUTH_IDENTITY_KEY=serverIdentity
+      - NACOS_AUTH_IDENTITY_VALUE=security
+      - NACOS_AUTH_TOKEN=SecretKey012345678901234567890123456789012345678901234567890123456789
+    volumes:
+      - ./standalone-logs/:/home/nacos/logs
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    networks:
+      - xhub
+
+  elasticsearch:
+    image: elasticsearch:${STACK_VERSION}
+    container_name: elasticsearch
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+      - ./ik:/usr/share/elasticsearch/plugins/ik
+    ports:
+      - "9200:9200"
+    environment:
+      - node.name=es01
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    mem_limit: ${MEM_LIMIT}
+    networks:
+      - xhub
+
+  kibana:
+    image: kibana:${STACK_VERSION}
+    container_name: kibana
+    volumes:
+      - kibanadata:/usr/share/kibana/data
+    ports:
+      - "5601:5601"
+    environment:
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+    networks:
+      - xhub
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus-standalone.yaml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - xhub
+    depends_on:
+      - nacos
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - xhub
+
+  canal:
+    image: canal/canal-server
+    container_name: canal
+    restart: always
+    environment:
+      - canal.instance.master.address=mysql:3306
+      - canal.instance.dbUsername=canal
+      - canal.instance.dbPassword=canal
+    ports:
+      - "11111:11111"
+    depends_on:
+      - mysql
+    networks:
+      - xhub
+
+volumes:
+  esdata:
+    driver: local
+  kibanadata:
+    driver: local
+  mysql_data:
+    driver: local

@@ -1,0 +1,30 @@
+CREATE DATABASE IF NOT EXISTS `xhub_chat`;
+USE `xhub_chat`;
+CREATE TABLE IF NOT EXISTS `chat` (
+  `id` BIGINT AUTO_INCREMENT NOT NULL,
+  `user_id` BIGINT NOT NULL,
+  `content` LONGTEXT NOT NULL,
+  `topic` VARCHAR(250) NOT NULL COMMENT '会话主题' ,
+  `model` VARCHAR(250) NOT NULL DEFAULT 'deepseek-r1' ,
+  `starred` TINYINT NOT NULL DEFAULT 0 ,
+  PRIMARY KEY (`id`)
+)
+ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
+COMMENT = '聊天信息表';
+
+CREATE DATABASE IF NOT EXISTS `xhub_user`;
+USE `xhub_user`;
+CREATE TABLE IF NOT EXISTS `user` (
+  `id` BIGINT AUTO_INCREMENT NOT NULL,
+  `account` VARCHAR(250) NOT NULL,
+  `password` VARCHAR(250) NOT NULL,
+  `api_key` VARCHAR(250) NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `uk_user_account` UNIQUE (`account`)
+)
+ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
+COMMENT = '用户表';
+
+CREATE USER 'canal'@'%' IDENTIFIED BY 'canal';
+GRANT SELECT, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'canal'@'%';
+FLUSH PRIVILEGES;
