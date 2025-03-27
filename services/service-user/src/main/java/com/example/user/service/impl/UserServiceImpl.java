@@ -59,19 +59,24 @@ public class UserServiceImpl implements UserService {
         if (apiKey == null && password == null) {
             throw new MyIllegalArgumentException("Must change one!!!");
         }
-        User currentUser = (User) StpUtil.getSession().get("currentUser");
-        User user = new User();
-        user.setId(currentUser.getId());
+        User user = (User) StpUtil.getSession().get("currentUser");
+        boolean isNullPassword = true;
         if (apiKey != null) {
             user.setApiKey(apiKey);
         }
         if (password != null) {
             user.setPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
-            StpUtil.logout();
+            isNullPassword = false;
         }
         Integer affectedRows = userMapper.update(user);
         if (affectedRows == 0) {
             throw new BusinessException("Update faied!!!");
+        }
+        if (isNullPassword) { // 没改密码，修改session的user信息
+            user = userMapper.selectById(user.getId());
+            StpUtil.getSession().set("currentUser", user);
+        } else { // 修改了密码直接下线
+            StpUtil.logout();
         }
         SimpleResponse response = new SimpleResponse();
         response.setMessage(String.format("%d rows affected!!!", affectedRows));
