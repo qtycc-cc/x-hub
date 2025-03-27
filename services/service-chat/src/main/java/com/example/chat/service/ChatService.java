@@ -38,4 +38,10 @@ public interface ChatService {
      * @return chat metas see {@link ChatMeta}
      */
     R<List<ChatMeta>> getChatMetasByKeyword(String keyword);
+    /**
+     * Get chat by id
+     * @param id chat id
+     * @return chat see {@link Chat}
+     */
+    R<Chat> getChatById(Long id);
 }

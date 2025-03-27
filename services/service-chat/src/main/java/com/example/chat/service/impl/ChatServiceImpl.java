@@ -92,6 +92,12 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public R<Chat> getChatById(Long id) {
+        Chat chat = chatMapper.selectById(id);
+        return R.ok("Find success", chat);
+    }
+
+    @Override
     public Flux<String> chat(UserChatRequest userChatRequest) {
         if (userChatRequest == null
                 || StrUtil.isBlank(userChatRequest.getMessage())

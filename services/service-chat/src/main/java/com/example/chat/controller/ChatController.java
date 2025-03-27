@@ -40,6 +40,11 @@ public class ChatController {
         return ResponseEntity.ok(chatService.getChatsByUserId(userId));
     }
 
+    @GetMapping("/chatinfo/{id}")
+    public ResponseEntity<R<Chat>> getChatById(@PathVariable Long id) {
+        return ResponseEntity.ok(chatService.getChatById(id));
+    }
+
     @GetMapping("/chatmeta/query")
     public ResponseEntity<R<List<ChatMeta>>> getChatMetasByKeyword(@RequestParam String keyword) {
         return ResponseEntity.ok(chatService.getChatMetasByKeyword(keyword));
