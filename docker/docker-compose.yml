@@ -9,6 +9,7 @@ services:
     build:
       context: ../gateway
       dockerfile: Dockerfile
+    restart: always
     ports:
       - "80:80"
     networks:
@@ -19,6 +20,7 @@ services:
       context: ../services/service-user
       dockerfile: Dockerfile
     container_name: service-user
+    restart: always
     ports:
       - "8000:8000"
     networks:
@@ -33,6 +35,7 @@ services:
       context: ../services/service-chat
       dockerfile: Dockerfile
     container_name: service-chat
+    restart: always
     ports:
       - "9000:9000"
     networks:
