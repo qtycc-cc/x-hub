@@ -36,4 +36,18 @@
         VALUES
         (#{id}, #{account}, #{password}, #{apiKey})
     </insert>
+
+    <update id="update">
+        UPDATE `user`
+        <set>
+            <if test="password != null and password != ''">
+                `password` = #{password}
+            </if>
+            <if test="apiKey != null and apiKey != ''">
+                `api_key` = #{apiKey}
+            </if>
+        </set>
+        WHERE
+            `id` = #{id}
+    </update>
 </mapper>

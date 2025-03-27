@@ -1,6 +1,7 @@
 package com.example.user.service;
 
 import com.example.model.request.UserCommonRequest;
+import com.example.model.request.UserUpdateRequest;
 import com.example.model.response.R;
 import com.example.model.response.SimpleResponse;
 import com.example.model.response.UserCommonResponse;
@@ -26,4 +27,11 @@ public interface UserService {
      * @return user info {@link UserCommonResponse}
      */
     R<UserCommonResponse> getUserInfo();
+    /**
+     * <p>Update user info</p>
+     * Can only change password and apiKey
+     * @param userUpdateRequest
+     * @return
+     */
+    R<SimpleResponse> updateUserInfo(UserUpdateRequest userUpdateRequest);
 }

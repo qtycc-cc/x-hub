@@ -11,4 +11,5 @@ public interface UserMapper {
     User selectByAccount(String account);
     User selectByAccountAndPassword(UserCommonRequest userCommonRequest);
     Integer insert(User user);
+    Integer update(User user);
 }

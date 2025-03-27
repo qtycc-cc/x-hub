@@ -15,6 +15,7 @@ import com.example.model.exception.BusinessException;
 import com.example.model.exception.InvalidCredentialsException;
 import com.example.model.exception.MyIllegalArgumentException;
 import com.example.model.request.UserCommonRequest;
+import com.example.model.request.UserUpdateRequest;
 import com.example.model.response.R;
 import com.example.model.response.SimpleResponse;
 import com.example.model.response.UserCommonResponse;
@@ -46,6 +47,34 @@ public class UserServiceImpl implements UserService {
         List<ChatMeta> chatMetas = chatMetasResponse.getData();
         userCommonResponse.setChatMetas(chatMetas);
         return R.ok("Get success!!!", userCommonResponse);
+    }
+
+    @Override
+    public R<SimpleResponse> updateUserInfo(UserUpdateRequest userUpdateRequest) {
+        if (userUpdateRequest == null) {
+            throw new MyIllegalArgumentException("Request can not be null!!!");
+        }
+        String apiKey = userUpdateRequest.getApiKey();
+        String password = userUpdateRequest.getPassword();
+        if (apiKey == null && password == null) {
+            throw new MyIllegalArgumentException("Must change one!!!");
+        }
+        User currentUser = (User) StpUtil.getSession().get("currentUser");
+        User user = new User();
+        user.setId(currentUser.getId());
+        if (apiKey != null) {
+            user.setApiKey(apiKey);
+        }
+        if (password != null) {
+            user.setPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
+        }
+        Integer affectedRows = userMapper.update(user);
+        if (affectedRows == 0) {
+            throw new BusinessException("Update faied!!!");
+        }
+        SimpleResponse response = new SimpleResponse();
+        response.setMessage(String.format("%d rows affected!!!", affectedRows));
+        return R.ok("Update success", response);
     }
 
     @Override
@@ -96,7 +125,7 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException("User register failed!!!");
         }
         SimpleResponse response = new SimpleResponse();
-        response.setMessage(String.format("%d row affected!!!", affectedRows));
+        response.setMessage(String.format("%d rows affected!!!", affectedRows));
         return R.ok("User register success", response);
     }
 }

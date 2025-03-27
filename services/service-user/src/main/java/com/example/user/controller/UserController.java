@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.model.request.UserCommonRequest;
+import com.example.model.request.UserUpdateRequest;
 import com.example.model.response.R;
 import com.example.model.response.SimpleResponse;
 import com.example.model.response.UserCommonResponse;
@@ -15,13 +16,14 @@ import cn.dev33.satoken.stp.StpUtil;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 
 @RestController
 public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/logout")
+    @GetMapping("/logout")
     public ResponseEntity<R<SimpleResponse>> logout() {
         StpUtil.logout();
         SimpleResponse response = new SimpleResponse();
@@ -42,5 +44,10 @@ public class UserController {
     @GetMapping("/user")
     public ResponseEntity<R<UserCommonResponse>> getUserInfo() {
         return ResponseEntity.ok(userService.getUserInfo());
+    }
+
+    @PatchMapping("/user")
+    public ResponseEntity<R<SimpleResponse>> updateUserInfo(@RequestBody UserUpdateRequest userUpdateRequest) {
+        return ResponseEntity.ok(userService.updateUserInfo(userUpdateRequest));
     }
 }
