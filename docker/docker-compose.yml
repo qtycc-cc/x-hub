@@ -57,6 +57,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./mysql:/docker-entrypoint-initdb.d
+      - ./mysql-conf:/etc/mysql/conf.d
     networks:
       - xhub
 
